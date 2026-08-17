@@ -1,0 +1,114 @@
+<Page
+    x:Class="CheckDevHealth.Views.DefenderHotspotPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="using:CheckDevHealth.Views"
+    mc:Ignorable="d">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Spacing="6" Margin="0,0,0,12">
+            <TextBlock Text="Defender Hotspot Analysis" FontSize="24" FontWeight="SemiBold" />
+            <TextBlock TextWrapping="Wrap" Opacity="0.8"
+                       Text="Records a short Microsoft Defender Antivirus performance trace (via New-MpPerformanceRecording / Get-MpPerformanceReport) while you run a build or other heavy workload, then highlights which folders and processes cost the most real-time scan time — flagging the ones that look like dev tool caches or build output that may be safe to exclude." />
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="12" Margin="0,0,0,12">
+            <TextBlock Text="Recording duration:" VerticalAlignment="Center" />
+            <ComboBox x:Name="DurationCombo" SelectedIndex="1" VerticalAlignment="Center">
+                <ComboBoxItem Content="15 seconds" Tag="15" />
+                <ComboBoxItem Content="30 seconds" Tag="30" />
+                <ComboBoxItem Content="60 seconds" Tag="60" />
+                <ComboBoxItem Content="120 seconds" Tag="120" />
+            </ComboBox>
+            <Button x:Name="RecordButton" Content="Start Recording" Click="RecordButton_Click" Style="{StaticResource AccentButtonStyle}" VerticalAlignment="Center" />
+            <ProgressRing x:Name="Progress" IsActive="False" Width="24" Height="24" VerticalAlignment="Center" />
+            <TextBlock x:Name="StatusText" VerticalAlignment="Center" Opacity="0.7" />
+        </StackPanel>
+
+        <InfoBar x:Name="ElevationBar" Grid.Row="2" Margin="0,0,0,12" IsClosable="False"
+                 Severity="Warning" Title="Administrator privileges required"
+                 Message="Recording a Defender performance trace requires this app to run as administrator. Close and re-launch Check Dev Health with 'Run as administrator', then try again."
+                 IsOpen="False" />
+
+        <ScrollViewer Grid.Row="3">
+            <StackPanel Spacing="20">
+
+                <InfoBar x:Name="SummaryBar" IsOpen="False" IsClosable="False" />
+
+                <StackPanel x:Name="PathsSection" Spacing="8" Visibility="Collapsed">
+                    <TextBlock Text="Top Folders by Scan Time" FontSize="16" FontWeight="SemiBold" />
+                    <ItemsControl x:Name="PathsRepeater">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="local:DefenderPathHotspotViewModel">
+                                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                        BorderBrush="{x:Bind AccentBrush}" BorderThickness="0,0,0,3"
+                                        CornerRadius="6" Padding="12" Margin="0,0,0,4">
+                                    <Grid ColumnSpacing="12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Spacing="2">
+                                            <TextBlock Text="{x:Bind Path}" FontWeight="SemiBold" TextWrapping="Wrap" FontFamily="Consolas" />
+                                            <TextBlock Text="{x:Bind DurationText}" Opacity="0.85" />
+                                            <TextBlock Text="{x:Bind DevReason}" TextWrapping="Wrap"
+                                                       Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                                                       Visibility="{x:Bind DevBadgeVisibility}" />
+                                            <TextBlock Text="Already excluded" FontStyle="Italic" Opacity="0.7"
+                                                       Visibility="{x:Bind AlreadyExcludedVisibility}" />
+                                        </StackPanel>
+                                        <Button Grid.Column="1" Content="Exclude Folder" VerticalAlignment="Top"
+                                                Tag="{x:Bind Path}" Click="ExcludePathButton_Click"
+                                                Visibility="{x:Bind ExcludeButtonVisibility}" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <StackPanel x:Name="ProcessesSection" Spacing="8" Visibility="Collapsed">
+                    <TextBlock Text="Top Processes by Scan Time" FontSize="16" FontWeight="SemiBold" />
+                    <ItemsControl x:Name="ProcessesRepeater">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="local:DefenderProcessHotspotViewModel">
+                                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                        BorderBrush="{x:Bind AccentBrush}" BorderThickness="0,0,0,3"
+                                        CornerRadius="6" Padding="12" Margin="0,0,0,4">
+                                    <Grid ColumnSpacing="12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Spacing="2">
+                                            <TextBlock Text="{x:Bind ProcessPath}" FontWeight="SemiBold" TextWrapping="Wrap" FontFamily="Consolas" />
+                                            <TextBlock Text="{x:Bind DurationText}" Opacity="0.85" />
+                                            <TextBlock Text="{x:Bind DevReason}" TextWrapping="Wrap"
+                                                       Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                                                       Visibility="{x:Bind DevBadgeVisibility}" />
+                                            <TextBlock Text="Already excluded" FontStyle="Italic" Opacity="0.7"
+                                                       Visibility="{x:Bind AlreadyExcludedVisibility}" />
+                                        </StackPanel>
+                                        <Button Grid.Column="1" Content="Exclude Process" VerticalAlignment="Top"
+                                                Tag="{x:Bind ProcessPath}" Click="ExcludeProcessButton_Click"
+                                                Visibility="{x:Bind ExcludeButtonVisibility}" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>

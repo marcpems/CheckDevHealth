@@ -31,6 +31,9 @@ public sealed partial class MainWindow : Window
                 case "analysis":
                     ContentFrame.Navigate(typeof(AnalysisPage));
                     break;
+                case "defender":
+                    ContentFrame.Navigate(typeof(DefenderHotspotPage));
+                    break;
             }
         }
     }

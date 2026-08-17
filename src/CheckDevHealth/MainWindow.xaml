@@ -19,6 +19,11 @@
                     <FontIcon Glyph="&#xE9D9;" />
                 </NavigationViewItem.Icon>
             </NavigationViewItem>
+            <NavigationViewItem Content="Defender Hotspots" Tag="defender">
+                <NavigationViewItem.Icon>
+                    <FontIcon Glyph="&#xE7BA;" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
             <NavigationViewItem Content="AI Analysis" Tag="analysis">
                 <NavigationViewItem.Icon>
                     <FontIcon Glyph="&#xE945;" />
