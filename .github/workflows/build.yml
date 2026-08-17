@@ -1,0 +1,58 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build (${{ matrix.platform }})
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [x64, ARM64]
+        configuration: [Release]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Restore NuGet packages
+        run: msbuild CheckDevHealth.slnx /t:Restore /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }} /v:minimal
+
+      - name: Build
+        run: msbuild CheckDevHealth.slnx /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }} /v:minimal
+
+      - name: Publish self-contained build
+        run: >
+          msbuild src/CheckDevHealth/CheckDevHealth.csproj /t:Publish
+          /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }}
+          /p:PublishProfile=win-${{ matrix.platform }}.pubxml /v:minimal
+
+      - name: Locate publish output
+        id: locate
+        shell: pwsh
+        run: |
+          $publishDir = Get-ChildItem -Path "src/CheckDevHealth/bin/${{ matrix.platform }}/${{ matrix.configuration }}" -Recurse -Directory -Filter "publish" | Select-Object -First 1
+          if (-not $publishDir) {
+            throw "Publish output directory not found."
+          }
+          echo "path=$($publishDir.FullName)" >> $env:GITHUB_OUTPUT
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CheckDevHealth-${{ matrix.platform }}-${{ matrix.configuration }}
+          path: ${{ steps.locate.outputs.path }}
+          retention-days: 14
+          if-no-files-found: error
