@@ -14,11 +14,6 @@ public sealed class SettingsService
 
     private static readonly string SettingsPath = Path.Combine(SettingsDir, "settings.json");
 
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        WriteIndented = true
-    };
-
     public AppSettings Load()
     {
         try
@@ -26,7 +21,7 @@ public sealed class SettingsService
             if (File.Exists(SettingsPath))
             {
                 var json = File.ReadAllText(SettingsPath);
-                var settings = JsonSerializer.Deserialize<AppSettings>(json, JsonOptions);
+                var settings = JsonSerializer.Deserialize(json, AppJsonContext.Default.AppSettings);
                 if (settings is not null)
                 {
                     return settings;
@@ -44,7 +39,7 @@ public sealed class SettingsService
     public void Save(AppSettings settings)
     {
         Directory.CreateDirectory(SettingsDir);
-        var json = JsonSerializer.Serialize(settings, JsonOptions);
+        var json = JsonSerializer.Serialize(settings, AppJsonContext.Default.AppSettings);
         File.WriteAllText(SettingsPath, json);
     }
 }

@@ -87,17 +87,17 @@ public sealed class DefenderHotspotService
         var overviewJson = await RunReportAsync(etlPath, "-Overview", cancellationToken);
         var overview = overviewJson is null
             ? null
-            : JsonSerializer.Deserialize<MpOverviewRoot>(overviewJson, MpJson.Options)?.Overview;
+            : JsonSerializer.Deserialize(overviewJson, AppJsonContext.Default.MpOverviewRoot)?.Overview;
 
         var filesJson = await RunReportAsync(etlPath, "-TopFiles 300", cancellationToken);
         var files = filesJson is null
             ? new List<MpFileEntry>()
-            : JsonSerializer.Deserialize<MpTopFilesRoot>(filesJson, MpJson.Options)?.TopFiles ?? new List<MpFileEntry>();
+            : JsonSerializer.Deserialize(filesJson, AppJsonContext.Default.MpTopFilesRoot)?.TopFiles ?? new List<MpFileEntry>();
 
         var processesJson = await RunReportAsync(etlPath, "-TopProcesses 50", cancellationToken);
         var processes = processesJson is null
             ? new List<MpProcessEntry>()
-            : JsonSerializer.Deserialize<MpTopProcessesRoot>(processesJson, MpJson.Options)?.TopProcesses ?? new List<MpProcessEntry>();
+            : JsonSerializer.Deserialize(processesJson, AppJsonContext.Default.MpTopProcessesRoot)?.TopProcesses ?? new List<MpProcessEntry>();
 
         return (overview, files, processes);
     }

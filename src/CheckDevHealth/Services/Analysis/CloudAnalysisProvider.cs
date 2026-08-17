@@ -35,20 +35,20 @@ public sealed class CloudAnalysisProvider : IAnalysisProvider
 
         var prompt = BuildPrompt(results);
 
-        var requestBody = new
+        var requestBody = new CloudChatRequest
         {
-            model = _settings.CloudModel,
-            messages = new object[]
+            Model = _settings.CloudModel,
+            Messages = new List<CloudChatMessage>
             {
-                new { role = "system", content = "You are a helpful assistant that reviews Windows developer machine health-check results and gives concise, prioritized, actionable recommendations." },
-                new { role = "user", content = prompt }
+                new() { Role = "system", Content = "You are a helpful assistant that reviews Windows developer machine health-check results and gives concise, prioritized, actionable recommendations." },
+                new() { Role = "user", Content = prompt }
             },
-            temperature = 0.3
+            Temperature = 0.3
         };
 
         using var request = new HttpRequestMessage(HttpMethod.Post, _settings.CloudEndpoint)
         {
-            Content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json")
+            Content = new StringContent(JsonSerializer.Serialize(requestBody, Services.AppJsonContext.Default.CloudChatRequest), Encoding.UTF8, "application/json")
         };
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _settings.CloudApiKey);
 
