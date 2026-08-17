@@ -1,0 +1,45 @@
+<Page
+    x:Class="CheckDevHealth.Views.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <ScrollViewer>
+        <StackPanel MaxWidth="640" HorizontalAlignment="Left" Spacing="16">
+            <TextBlock Text="Settings" FontSize="24" FontWeight="SemiBold" />
+
+            <StackPanel Spacing="8">
+                <TextBlock Text="AI Analysis Mode" FontWeight="SemiBold" />
+                <TextBlock TextWrapping="Wrap" Opacity="0.8"
+                           Text="Choose how the 'AI Analysis' page generates recommendations. Cloud calls a remote, OpenAI-compatible endpoint you configure below. Local runs fully on-device with no network calls (not implemented yet in this build)." />
+                <RadioButtons x:Name="ModeRadioButtons" SelectionChanged="ModeRadioButtons_SelectionChanged">
+                    <RadioButton x:Name="CloudRadio" Content="Cloud (requires network + API key)" />
+                    <RadioButton x:Name="LocalRadio" Content="Local (offline, on-device — coming soon)" />
+                </RadioButtons>
+            </StackPanel>
+
+            <StackPanel x:Name="CloudSettingsPanel" Spacing="8">
+                <TextBlock Text="Cloud Provider Settings" FontWeight="SemiBold" />
+                <TextBlock Text="Endpoint (OpenAI-compatible Chat Completions URL)" />
+                <TextBox x:Name="EndpointBox" />
+                <TextBlock Text="Model" />
+                <TextBox x:Name="ModelBox" />
+                <TextBlock Text="API Key" />
+                <PasswordBox x:Name="ApiKeyBox" />
+            </StackPanel>
+
+            <StackPanel x:Name="LocalSettingsPanel" Spacing="8" Visibility="Collapsed">
+                <TextBlock Text="Local Provider Settings" FontWeight="SemiBold" />
+                <TextBlock TextWrapping="Wrap" Opacity="0.8"
+                           Text="Reserved for a future local model path (e.g. an ONNX/GGUF model). No inference happens locally yet." />
+                <TextBlock Text="Local model path (future use)" />
+                <TextBox x:Name="LocalModelPathBox" IsEnabled="False" />
+            </StackPanel>
+
+            <Button x:Name="SaveButton" Content="Save Settings" Click="SaveButton_Click" Style="{StaticResource AccentButtonStyle}" />
+            <InfoBar x:Name="SavedBar" IsOpen="False" IsClosable="False" Severity="Success" Title="Saved" Message="Settings saved." />
+        </StackPanel>
+    </ScrollViewer>
+</Page>

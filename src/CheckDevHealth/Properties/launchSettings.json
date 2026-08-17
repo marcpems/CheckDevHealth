@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "CheckDevHealth (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "CheckDevHealth (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
