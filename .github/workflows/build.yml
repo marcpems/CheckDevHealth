@@ -33,6 +33,13 @@ jobs:
       - name: Build
         run: msbuild CheckDevHealth.slnx /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }} /v:minimal
 
+      - name: Build MSIX package
+        run: >
+          msbuild src/CheckDevHealth/CheckDevHealth.csproj /t:Build
+          /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }}
+          /p:GenerateAppxPackageOnBuild=true /p:AppxBundlePlatforms=${{ matrix.platform }}
+          /p:UapAppxPackageBuildMode=SideloadOnly /v:minimal
+
       - name: Publish self-contained build
         run: >
           msbuild src/CheckDevHealth/CheckDevHealth.csproj /t:Publish
@@ -52,10 +59,30 @@ jobs:
           }
           echo "path=$($publishDir.FullName)" >> $env:GITHUB_OUTPUT
 
+      - name: Locate MSIX package output
+        id: locate-msix
+        shell: pwsh
+        run: |
+          $appPackagesDir = Get-ChildItem -Path "src/CheckDevHealth/AppPackages" -Recurse -Directory |
+            Where-Object { $_.Name -match "_Test$" } |
+            Select-Object -First 1
+          if (-not $appPackagesDir) {
+            throw "MSIX AppPackages output directory not found."
+          }
+          echo "path=$($appPackagesDir.FullName)" >> $env:GITHUB_OUTPUT
+
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: CheckDevHealth-${{ matrix.platform }}-${{ matrix.configuration }}
           path: ${{ steps.locate.outputs.path }}
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Upload MSIX package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CheckDevHealth-${{ matrix.platform }}-${{ matrix.configuration }}-MSIX
+          path: ${{ steps.locate-msix.outputs.path }}
           retention-days: 14
           if-no-files-found: error
