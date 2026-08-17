@@ -43,9 +43,12 @@ jobs:
         id: locate
         shell: pwsh
         run: |
-          $publishDir = Get-ChildItem -Path "src/CheckDevHealth/bin/${{ matrix.platform }}/${{ matrix.configuration }}" -Recurse -Directory -Filter "publish" | Select-Object -First 1
+          $rid = "win-$('${{ matrix.platform }}'.ToLower())"
+          $publishDir = Get-ChildItem -Path "src/CheckDevHealth/bin" -Recurse -Directory -Filter "publish" |
+            Where-Object { $_.FullName -match [regex]::Escape("$rid\publish") } |
+            Select-Object -First 1
           if (-not $publishDir) {
-            throw "Publish output directory not found."
+            throw "Publish output directory not found for RID '$rid'."
           }
           echo "path=$($publishDir.FullName)" >> $env:GITHUB_OUTPUT
 
